@@ -55,6 +55,9 @@ jobs:
       - name: Add headset following calibration display
         run: python3 black-vr/vr-prototype/patch_hud.py meta-sdk
 
+      - name: Fix HUD alignment and live values
+        run: python3 black-vr/vr-prototype/patch_hud_v9.py meta-sdk
+
       - name: Build OpenXR test APK
         working-directory: meta-sdk/Samples/XrSamples/XrInput/Projects/Android
         run: |
