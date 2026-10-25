@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      - name: Checkout BLACK VR modifications
+        uses: actions/checkout@v4
+        with:
+          path: black-vr
+
       - name: Download Meta OpenXR SDK
         uses: actions/checkout@v4
         with:
@@ -31,6 +36,9 @@ jobs:
       - name: Install Android build tools
         run: |
           sdkmanager --install "platforms;android-32" "build-tools;32.0.0" "ndk;27.0.12077973" "cmake;3.22.1"
+
+      - name: Apply BLACK VR aiming prototype
+        run: python3 black-vr/vr-prototype/patch_xrinput.py meta-sdk
 
       - name: Build OpenXR test APK
         working-directory: meta-sdk/Samples/XrSamples/XrInput/Projects/Android
