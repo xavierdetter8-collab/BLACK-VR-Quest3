@@ -46,6 +46,9 @@ jobs:
       - name: Fix cube calibration input conflict
         run: python3 black-vr/vr-prototype/patch_input_conflict.py meta-sdk
 
+      - name: Fix calibration A button
+        run: python3 black-vr/vr-prototype/patch_mode_button.py meta-sdk
+
       - name: Build OpenXR test APK
         working-directory: meta-sdk/Samples/XrSamples/XrInput/Projects/Android
         run: |
