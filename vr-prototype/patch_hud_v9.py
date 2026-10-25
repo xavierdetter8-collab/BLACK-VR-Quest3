@@ -51,8 +51,20 @@ new = '''            const OVR::Posef head = FromXrPosef(headLocation.pose);
                     levelRotation,
                     worldPosition - menuRoot));'''
 
-assert old in code, "Build 8 headset pose code not found"
-code = code.replace(old, new, 1)
+# Locate the actual Build 8 HUD code using stable markers.
+start_marker = "            const OVR::Posef head = FromXrPosef(headLocation.pose);"
+end_marker = "                OVR::Posef(head.Rotation, panelPosition));"
+
+start = code.find(start_marker)
+end = code.find(end_marker, start)
+
+if start == -1 or end == -1:
+    raise RuntimeError(
+        "Could not locate the Build 8 HUD block. No files changed."
+    )
+
+code = code[:start] + new + code[end + len(end_marker):]
+
 
 # Explicitly format fresh values for the display.
 start = code.index("        calibrationLabel_->SetText(")
