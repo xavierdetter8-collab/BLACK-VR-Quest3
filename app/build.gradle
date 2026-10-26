@@ -61,6 +61,7 @@ android {
             signingConfig keystore ? signingConfigs.release : signingConfigs.debug
         }
         debug {
+            applicationIdSuffix ".vrdev"
             // the recompiled code is far too slow unoptimized
             externalNativeBuild {
                 cmake {
