@@ -126,6 +126,7 @@ if(EXISTS "${BLACKVR_OPENXR_INCLUDE}/openxr/openxr.h")
     target_sources(
         main PRIVATE
         "${NATIVE}/vr/openxr_compile_probe.cpp"
+        "${NATIVE}/vr/openxr_session_lifecycle.cpp"
     )
 
     message(STATUS "BLACKVR: OpenXR compile probe enabled")
