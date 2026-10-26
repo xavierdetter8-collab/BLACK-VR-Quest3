@@ -583,6 +583,8 @@ extern "C" int blackvr_openxr_compile_probe() {
                                 xrDeviceInfo.vulkanPhysicalDevice = gpu;
                                 xrDeviceInfo.vulkanCreateInfo = &deviceInfo;
 
+                                // STEP 161: Own the Vulkan device.
+                                blackvr::RuntimeResources deviceResources;
                                 VkDevice device = VK_NULL_HANDLE;
                                 VkResult vkDeviceResult =
                                     VK_ERROR_INITIALIZATION_FAILED;
@@ -593,6 +595,10 @@ extern "C" int blackvr_openxr_compile_probe() {
                                     &device,
                                     &vkDeviceResult
                                 );
+
+                                // Take ownership even if creation reports
+                                // an error after returning a device handle.
+                                deviceResources.device = device;
 
                                 __android_log_print(
                                     ANDROID_LOG_INFO,
@@ -919,10 +925,9 @@ extern "C" int blackvr_openxr_compile_probe() {
                                     }
                                 }
 
-                                // Clean up before destroying VkInstance.
-                                if (device != VK_NULL_HANDLE) {
-                                    vkDestroyDevice(device, nullptr);
-                                }
+                                // Release the Vulkan device only after
+                                // the OpenXR session has been released.
+                                deviceResources.Shutdown();
                             }
                         }
                     }
