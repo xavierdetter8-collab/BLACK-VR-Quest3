@@ -3,6 +3,51 @@
 
 namespace blackvr {
 
+XrResult SessionLifecycle::SubmitEmptyFrame(XrSession session) {
+    if (!running)
+        return XR_ERROR_SESSION_NOT_RUNNING;
+
+    XrFrameWaitInfo waitInfo{
+        XR_TYPE_FRAME_WAIT_INFO
+    };
+
+    XrFrameState frameState{
+        XR_TYPE_FRAME_STATE
+    };
+
+    XrResult result = xrWaitFrame(
+        session, &waitInfo, &frameState
+    );
+
+    if (XR_FAILED(result))
+        return result;
+
+    XrFrameBeginInfo beginInfo{
+        XR_TYPE_FRAME_BEGIN_INFO
+    };
+
+    result = xrBeginFrame(session, &beginInfo);
+
+    if (XR_FAILED(result))
+        return result;
+
+    XrFrameEndInfo endInfo{
+        XR_TYPE_FRAME_END_INFO
+    };
+
+    endInfo.displayTime = frameState.predictedDisplayTime;
+    endInfo.environmentBlendMode =
+        XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+
+    // No rendered images yet.
+    endInfo.layerCount = 0;
+    endInfo.layers = nullptr;
+
+    return xrEndFrame(session, &endInfo);
+}
+
+
+
 XrResult SessionLifecycle::Poll(
     XrInstance instance,
     XrSession session

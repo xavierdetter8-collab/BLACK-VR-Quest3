@@ -10,6 +10,7 @@ struct SessionLifecycle {
     bool exitRequested = false;
 
     XrResult Poll(XrInstance instance, XrSession session);
+    XrResult SubmitEmptyFrame(XrSession session);
 };
 
 }
