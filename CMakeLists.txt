@@ -111,3 +111,48 @@ target_link_libraries(main PRIVATE SDL3::SDL3 tomlplusplus::tomlplusplus glslang
                       vulkan android log)
 # 16 KB pages, as Android 15 devices may have
 target_link_options(main PRIVATE -Wl,-z,max-page-size=16384)
+
+
+# BEGIN BLACKVR OPENXR COMPILE PROBE
+set(BLACKVR_OPENXR_INCLUDE
+    "${REPO}/.local/openxr/include"
+)
+
+if(EXISTS "${BLACKVR_OPENXR_INCLUDE}/openxr/openxr.h")
+    target_include_directories(
+        main PRIVATE "${BLACKVR_OPENXR_INCLUDE}"
+    )
+
+    target_sources(
+        main PRIVATE
+        "${NATIVE}/vr/openxr_compile_probe.cpp"
+    )
+
+    message(STATUS "BLACKVR: OpenXR compile probe enabled")
+else()
+    message(FATAL_ERROR "BLACKVR: OpenXR headers missing")
+endif()
+# END BLACKVR OPENXR COMPILE PROBE
+
+
+# BEGIN BLACKVR OPENXR LOADER
+if(ANDROID)
+    set(BLACKVR_LOADER_SO
+        "${REPO}/.local/openxr/lib/${ANDROID_ABI}/libopenxr_loader.so"
+    )
+
+    if(NOT EXISTS "${BLACKVR_LOADER_SO}")
+        message(FATAL_ERROR "BLACKVR: OpenXR loader missing")
+    endif()
+
+    add_library(blackvr_openxr_loader SHARED IMPORTED)
+
+    set_target_properties(blackvr_openxr_loader PROPERTIES
+        IMPORTED_LOCATION "${BLACKVR_LOADER_SO}"
+    )
+
+    target_link_libraries(main PRIVATE blackvr_openxr_loader)
+
+    message(STATUS "BLACKVR: OpenXR loader linked")
+endif()
+# END BLACKVR OPENXR LOADER

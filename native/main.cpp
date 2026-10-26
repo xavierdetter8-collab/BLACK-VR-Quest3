@@ -339,8 +339,11 @@ void Dispatch(const SDL_Event& e) {
 
 }  // namespace
 
+extern "C" int blackvr_openxr_compile_probe();
+
 int main(int, char**) {
     LogToLogcat();
+
     SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight");
     SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "0");
     SDL_SetHint(SDL_HINT_MOUSE_TOUCH_EVENTS, "0");
@@ -349,6 +352,17 @@ int main(int, char**) {
         __android_log_print(ANDROID_LOG_ERROR, "BLACK", "SDL_Init: %s", SDL_GetError());
         return 1;
     }
+
+    
+    const int blackvr_xr_result = blackvr_openxr_compile_probe();
+    // OpenXR deliberately skipped for crash testing.
+
+    __android_log_print(
+        ANDROID_LOG_INFO, "BLACKVR",
+        "OpenXR runtime result: %d",
+        blackvr_xr_result
+    );
+
     logx::Init((app::ExeDir() / "logs").string(), app::kGame.log);
     app::Load();
     if (app::kGame.init) app::kGame.init();
@@ -360,6 +374,20 @@ int main(int, char**) {
         LOGE("app: no window: %s", SDL_GetError());
         return 1;
     }
+
+
+    const std::string xr_message =
+        "STEP 144: Vulkan Eye Image Test\n\n"
+        "Result: " + std::to_string(blackvr_xr_result) +
+        "\n\n-144 = Both eyes have valid Vulkan images."
+        "\nOther result = Check diagnostic code.";
+
+    SDL_ShowSimpleMessageBox(
+        SDL_MESSAGEBOX_INFORMATION,
+        "BLACK VR OpenXR Test",
+        xr_message.c_str(),
+        g_window
+    );
 
     app::GameFiles game;
     if (!app::FindGame(game)) {
