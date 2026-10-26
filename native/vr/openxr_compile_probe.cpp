@@ -11,6 +11,7 @@
 #include <android/log.h>
 #include <openxr/openxr.h>
 #include <openxr/openxr_platform.h>
+#include "openxr_runtime_resources.h"
 
 extern "C" int blackvr_openxr_compile_probe() {
     JNIEnv* env =
@@ -650,6 +651,9 @@ extern "C" int blackvr_openxr_compile_probe() {
                                         resultCode =
                                             static_cast<int>(sessionResult);
                                     } else {
+                                        blackvr::RuntimeResources sessionResources;
+                                        sessionResources.session = session;
+
                                         // STEP 142: Enumerate VR swapchain formats.
                                         uint32_t formatCount = 0;
 
@@ -753,7 +757,7 @@ extern "C" int blackvr_openxr_compile_probe() {
                                                             resultCode =
                                                                 static_cast<int>(viewResult);
                                                         } else {
-                                                            std::vector<XrSwapchain> swapchains;
+                                                            // Session resources are owned by the outer scope.
                                                             resultCode = -144;
 
                                                             for (uint32_t eye = 0;
@@ -792,7 +796,7 @@ extern "C" int blackvr_openxr_compile_probe() {
                                                                     break;
                                                                 }
 
-                                                                swapchains.push_back(swapchain);
+                                                                sessionResources.eyeSwapchains.push_back(swapchain);
 
                                                                 uint32_t imageCount = 0;
 
@@ -886,16 +890,15 @@ extern "C" int blackvr_openxr_compile_probe() {
                                                                 );
                                                             }
 
-                                                            // Clean up both temporary eye swapchains.
-                                                            for (XrSwapchain swapchain : swapchains) {
-                                                                XrResult destroyResult =
-                                                                    xrDestroySwapchain(swapchain);
+                                                            // STEP 155: Release eye swapchains through
+                                                            // their dedicated resource owner.
+                                                            XrResult cleanup =
+                                                                sessionResources.ReleaseSwapchains();
 
-                                                                if (XR_FAILED(destroyResult) &&
-                                                                    resultCode == -144) {
-                                                                    resultCode =
-                                                                        static_cast<int>(destroyResult);
-                                                                }
+                                                            if (XR_FAILED(cleanup) &&
+                                                                resultCode == -144) {
+                                                                resultCode =
+                                                                    static_cast<int>(cleanup);
                                                             }
                                                         }
                                                     }
@@ -905,7 +908,7 @@ extern "C" int blackvr_openxr_compile_probe() {
 
                                         // Release session before Vulkan cleanup.
                                         XrResult destroySessionResult =
-                                            xrDestroySession(session);
+                                            sessionResources.ReleaseSession();
 
                                         if (XR_FAILED(destroySessionResult)) {
                                             resultCode =

@@ -377,7 +377,7 @@ int main(int, char**) {
 
 
     const std::string xr_message =
-        "STEP 144: Vulkan Eye Image Test\n\n"
+        "STEP 157: Session Ownership Test\n\n"
         "Result: " + std::to_string(blackvr_xr_result) +
         "\n\n-144 = Both eyes have valid Vulkan images."
         "\nOther result = Check diagnostic code.";

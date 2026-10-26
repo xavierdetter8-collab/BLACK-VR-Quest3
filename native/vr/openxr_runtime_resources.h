@@ -28,6 +28,8 @@ public:
 
     ~RuntimeResources();
 
+    XrResult ReleaseSwapchains();
+    XrResult ReleaseSession();
     void Shutdown();
 };
 
